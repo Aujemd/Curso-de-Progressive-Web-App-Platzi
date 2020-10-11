@@ -1,5 +1,5 @@
-# Curso de PWA con Recat en Platzi
+# Curso de PWA con React :atom: en Platzi 
 
-Este repositorio contiene todo el contenido del curso a medida que construimos una app para ver recetas con la API de MealDB.
+React.js application made for course of Progressive Web App of platzi :rocket:
 
-Hay un branch por clase para que puedas navegar con facilidad el curso.
+:mag_right: Live demo: https://curso-de-progressive-web-app-platzi.vercel.app/
