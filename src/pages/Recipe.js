@@ -21,6 +21,24 @@ export default class Recipe extends React.Component {
     this.setState({ recipe, isLoading: false })
   }
 
+  compartir = (e) => {
+    e.preventDefault();
+    if( !navigator.share ) {
+      alert("Tu browser no soporta la Web Share")
+      return;
+    }
+
+    const { recipe } = this.state
+
+    navigator.share({
+      title: `${recipe.name}`,
+      text: 'Receta de platzi',
+      url: document.location.href
+    })
+    .then(() => alert('Contenido Compartido!'))
+    .catch((error) => alert("Hubo un error"))
+  }
+
   render() {
     const { recipe, isLoading } = this.state
 
@@ -37,13 +55,14 @@ export default class Recipe extends React.Component {
       </Helmet>
 
       <div className="hero" style={{ backgroundImage: `url(${recipe.thumbnail})` }} />
-      
+
       <div className="title">
         <div className="info">
           <h1>{ recipe.name }</h1>
           <p>{ recipe.origin }</p>
         </div>
         <div>
+          <a onClick={ this.compartir }> Compartir </a>
         </div>
       </div>
 

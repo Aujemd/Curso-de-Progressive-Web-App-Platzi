@@ -1,0 +1,235 @@
+¿Qué es una PWA?
+No hay una definición concreta sobre que es una PWA. Lo mejor es entender como es el panorama actual.
+
+¿Cómo es la web hoy?
+
+Spoiler Alert: No funciona muy bien en mobile.
+Más del 50% de nuestros usuarios está en mobile.
+Tenemos malas conexiones en los dispositivos móviles, conexiones tipo 3G y LTE no son particularmente confiables. Esto genera que un sitio promedio tarda 14 segundos en cargar en mobile.
+La UX no es solamente el diseño de nuestra app, tiene que ver con que tan rápido funciona nuestra aplicación en el mundo real, con un teléfono que tiene una conexión mala.
+Hay estudios que demuestran la importancia de lograr que tu sitio funcione rápidamente en dispositivos móviles:
+• 50% de los usuarios se van de un sitio que tarda más de 3 segundos en cargar.
+• Cada segundo de demora nos cuesta un 5-10% de nuestras ventas.
+
+Vamos a centrarnos en tres cosas a lo largo de este curso:
+
+   Performance.
+   Instalable en Homescreen.
+   Dar soporte Offline.
+
+Creación del Proyecto
+
+Crear el proyecto usando create-react-app.
+
+create-react-app platzi-recetas
+Luego, instalar react-helmet, react-router-dom y serve
+
+npm i react-helmet react-router-dom serve
+Finalmente, agregar los scripts en el package.json.
+
+"scripts": {
+  "dev": "react-scripts start",
+  "start": "serve ./build -s -p ${PORT:-4000}",
+  "build": "react-scripts build",
+  "test": "react-scripts test --env=jsdom",
+  "eject": "react-scripts eject"
+}
+
+Google Lighthouse
+Es una herramienta oficial de Google que viene con Chrome, con la cual podemos hacer un diagnóstico a una Web App. Estos diagnósticos se centran en Performance y Accesibilidad, pero también tiene una herramienta para diagnosticar si nuestra Web App se considera una PWA o no y que pasos debemos de tomar para que lo sea.
+
+Lighthouse no sustituye hacer pruebas con un dispositivo móvil real, siempre realiza pruebas en un dispositivo móvil.
+
+El diagnostico de Performance nos muestra dos de los conceptos más importantes en performance: First meaningful Paint y First interactive.
+
+First meaningful Paint o primer pintado significativo, esto señala cuanto tiempo tardo el navegador en renderizar la aplicación de una forma que tenga sentido. Generalmente queremos que este situado entre 1 y 2 segundos.
+
+First interactive o primera interacción, señala el tiempo cuando ya se cargó React, inicializo la aplicación y que podamos correr comandos dentro de la aplicación.
+
+¿Cómo bajamos estos tiempos?
+
+Para bajar el Time To First Meaningful Paint podemos hacer Server Side Rendering, reducir el tamaño de nuestro HTML y CSS o simplemente teniendo servidores más rápidos.
+El Time To Interactive tiene mucho que ver con el framework que estemos utilizando, usualmente queremos que tarde menos de 5 segundos.
+
+Creando un Web Manifest
+
+En esta clase vamos a ver cómo implementar la funcionalidad de Add to Homescreen.
+
+Nota IMPORTANTE:
+
+Al momento de crear este curso esta saliendo Chrome 68, dicha versión va a cambiar el comportamiento del Add to Homescreen sutilmente.
+create-react-app nos da un Web Manifest pre armado el cual debemos configurar. Todo lo que tiene que ver con nuestro Web Manifest está dentro de los archivos index.html y manifest.json de la carpeta public de nuestro proyecto.
+
+Por el momento vamos a trabajar dentro del archivo manifest.json, en el podemos ver varios atributos, los cuales son:
+• short_name: Es el nombre que se utiliza en la Homescreen.
+• name: Es el nombre de nuestra aplicación.
+• icons: Especifica un array de imágenes que servirán como iconos de la aplicación. Cambiaremos el “favicon.ico” por “icon.png”, especificamos el tamaño a 512x512 y el tipo a “image/png”.
+• start_url: Nos indica en que página comienza nuestra aplicación, por compatibilidad siempre conviene que sea “/” en lugar de “./index.html”.
+• display: Define el modo de visualización para la aplicación. Standalone significa que la aplicación puede correr por su misma.
+• theme_color: Define qué color vamos a usar en la barra de tareas de Android para que combine con nuestra aplicación.
+• related_applications: Sirve si queremos que Chrome en el Add to Homescreen recomiende una aplicación del Store.
+
+Para probar nuestro Add to Homescreen debemos tener en cuenta que un requisito fundamental de las PWA es que todo funcione con HTTPS.
+
+Nuestra aplicación por defecto es fullscreen, así que NO OLVIDES de brindar un camino al home.
+
+En iOS necesitamos añadir alguna metadata al index.html de nuestro proyecto. Al momento de probar nuestra aplicación en iOS nos daremos cuenta de que el Add to Homescreen en este caso debe ser añadido manualmente por el usuario.
+
+Correr server en producción para usar el service worker
+
+npm run build && npm start
+
+bajar ngrok pa testear producción
+
+correr ngrok
+
+./ngrok http puertodelapp
+
+¿Qué es un Service Worker?
+Son la característica más importante de una PWA.
+
+Es lo que hace posible que las PWA funcionen, es un script que nuestro navegador corre detrás de escena y este no puede tocar el DOM.
+
+Podemos tener control absoluto a nivel red de nuestra aplicación gracias a los service workers
+
+¿Qué es un Service Worker?
+Son la característica más importante de una PWA.
+
+Es lo que hace posible que las PWA funcionen, es un script que nuestro navegador corre detrás de escena y este no puede tocar el DOM.
+
+Podemos tener control absoluto a nivel red de nuestra aplicación gracias a los service workers.
+
+Introducción a Workbox
+En esta clase vamos a ver como implementar service workers en nuestra aplicación.
+
+Los service workers solo funcionan en producción.
+
+Una recomendación siempre que trabajemos con service workers es ir a Clear Storage en la tab de Application de las DevTools, y limpiar la información del sitio. Esto desinstalara todo lo que es cache y limpiara los service workers.
+
+Quienes habrán prestado atención a la documentación de create-react-app habrán leído que este incluye un service worker.
+El service worker de Create React App hace algo llamado “SW Precache“, lo que hace es precargar y dejar disponibles offline todos los archivos necesarios para correr la aplicación. Una recomendación a la hora de hacer debugging es refrescar el sitio pues un service worker por lo general se inicializa después de la primera carga.
+
+NUNCA conviene escribir nuestro propio service worker especialmente con herramientas de bajo nivel.
+
+Para implementar nuestro propio service worker usaremos Workbox, una librería creada por Google para crear Service Workers.
+
+Hay un pequeño detalle al momento de implementar Workbox en nuestro proyecto y es que estamos yendo en contra de los principios de Create React App y esto solo significa una cosa “eject”, esto nos llenaría de archivos que no nos sirven. Para evitar hacer eject vamos a instalar react-app-rewired y el plugin para webpack de workbox.
+
+npm add workbox-webpack-plugin react-app-rewire-workbox react-app-rewired
+
+crear el archivo config-overrides.js
+
+Implementando Workbox
+En esta clase vamos a ver como implementar estrategias de carga con Workbox.
+
+El funcionamiento de un service worker por defecto toma una lista de assets para precargarlos y si la ruta coincide exactamente con un asset entonces lo tomara de cache.
+
+Workbox tiene una característica llamada registerNavigationRoute la cual se encarga de hacer el funcionamiento por defecto de un service worker más aparte si encuentra una url que no conoce va a buscar una url, en este caso index.html y que el se encargue de lo que va a mostrar.
+
+Existen diferentes estrategias de carga.
+La primera y fundamental se llama Network Only. Esta se encarga checar si hay conexión a internet, si existe una conexión realiza la petición de información, en caso de no haber conexión se rompe la página.
+
+¿Cuándo usar Network Only?
+Por defecto si no queremos cache o manejamos información en tiempo real.
+
+Network First es otra estrategia de carga, se encarga mandar la petición a internet, si la conexión a internet esta caída entonces tomara la información que tenga almacenada en cache.
+
+¿Cuándo usar Network First?
+Cuando queremos la última versión de un asset y tener soporte offline.
+
+Aplicando Estrategias de Carga
+En esta clase vamos a analizar diferentes estrategias de carga, veremos sus ventajas y desventajas.
+
+• Cache First.
+
+Es una estrategia de carga que lo primero que hace es ir al cache y si encuentra el recurso lo sirve directamente. En caso de no encontrarlo va a ir a red, guardar la información en cache y servir esa versión.
+
+Esta estrategia puede ser peligrosa y solo es recomendable cuando queremos máxima velocidad y estamos manejando un recurso que nunca cambia, como una imagen o alguna fuente.
+
+• Stale While Revalidate
+
+Esta es una estrategia de carga muy particular y que mejor funciona a la hora de mejorar el rendimiento. Lo que hace es ir a cache y a red al mismo tiempo, toma la versión más rápida que siempre será la de cache y en cuanto recibe la de red va a actualizar la versión de cache.
+
+Es recomendable esta estrategia cuando queremos mucha velocidad y estamos manejando un recurso que puede estar levemente desactualizado.
+Al momento de escribir nuestras estrategias en Workbox SI IMPORTA el orden en que pongamos las cosas, si queremos una estrategia o regla por defecto debemos poner esa regla hasta el final de todo.
+
+Dominions encriptados free
+
+Let's Encrypt
+
+Google Analytics Offline
+En esta clase vamos a implementar Google Analytics con soporte offline en nuestra aplicación.
+
+Como primer paso debemos incorporar react-ga, un plugin que nos permite correr Google Analytics dentro de React.
+
+Para unir nuestro plugin a la historia de React Router la mejor opción es incorporarlo dentro de la historia de la aplicación cambiando el BrowserRouter por un Router común, creamos un nuevo history para poder extender los métodos del Router, y que cada vez que el usuario cambie de pagina haga tracking de una page view.
+
+Si tienes algún AdBlocker desactívalo cuando estés desarrollando tu sitio para que evitar que bloqueé Google Analytics.
+
+Workbox ya cuenta con un método para facilitar que Google Analytics funcione de forma offline, va a capturar todas las peticiones que hagamos a GA, las va a guardar en memoria y cuando el usuario retome la conexión a internet se enviaran las peticiones.
+
+Experimentar con Workbox
+Google Analytics Offline
+En esta clase vamos a implementar Google Analytics con soporte offline en nuestra aplicación.
+
+Como primer paso debemos incorporar react-ga, un plugin que nos permite correr Google Analytics dentro de React.
+
+Para unir nuestro plugin a la historia de React Router la mejor opción es incorporarlo dentro de la historia de la aplicación cambiando el BrowserRouter por un Router común, creamos un nuevo history para poder extender los métodos del Router, y que cada vez que el usuario cambie de pagina haga tracking de una page view.
+
+Si tienes algún AdBlocker desactívalo cuando estés desarrollando tu sitio para que evitar que bloqueé Google Analytics.
+
+Workbox ya cuenta con un método para facilitar que Google Analytics funcione de forma offline, va a capturar todas las peticiones que hagamos a GA, las va a guardar en memoria y cuando el usuario retome la conexión a internet se enviaran las peticiones.
+
+Instalar google Analytics
+
+npm add react-ga
+
+Google Analytics Offline
+En esta clase vamos a implementar Google Analytics con soporte offline en nuestra aplicación.
+
+Como primer paso debemos incorporar react-ga, un plugin que nos permite correr Google Analytics dentro de React.
+
+Para unir nuestro plugin a la historia de React Router la mejor opción es incorporarlo dentro de la historia de la aplicación cambiando el BrowserRouter por un Router común, creamos un nuevo history para poder extender los métodos del Router, y que cada vez que el usuario cambie de pagina haga tracking de una page view.
+
+Si tienes algún AdBlocker desactívalo cuando estés desarrollando tu sitio para que evitar que bloqueé Google Analytics.
+
+Workbox ya cuenta con un método para facilitar que Google Analytics funcione de forma offline, va a capturar todas las peticiones que hagamos a GA, las va a guardar en memoria y cuando el usuario retome la conexión a internet se enviaran las peticiones.
+
+Web Share API
+Web Share API es una API reciente de Android que nos permite usar el Share nativo del sistema operativo.
+
+Para implementarlo hay que tener presente que solo funcionara si hacemos click a algún link, esto es una medida de precaución para que nadie abuse de la API obligándonos a tener que compartir algo que no queremos. Además, Web Share API por el momento solo funciona en Android así que tenemos que detectar si tenemos la característica para poder usarla.
+
+Web Share API solamente funciona con HTTPS.
+
+Trabajando Offline
+Vamos a mejorar la UX para que nuestro usuario tenga una respuesta visible de que se encuentra offline.
+
+La forma de saber si la aplicación esta offline u online es a través de una variable llamada Navigator.onLine, algo muy importante a tener en cuenta es que la variable nos va a decir que estamos online siempre y cuando no estemos offline lo cual significa que si el usuario tiene mala conexión a internet igual va a marcar como online.
+
+La forma correcta de checar si el navegador esta online u offline es con dos eventos que se añaden a window, “offline” y “online”.
+
+Notificaciones
+Una de las funcionalidades más populares de las PWA son las Notificaciones.
+
+Hay que tener en cuenta que, si el usuario apenas entra a nuestro sitio y le aparece un mensaje para permitir las notificaciones esto está afectando la UX, por lo cual debemos darle un contexto de porque le vamos a enviar notificaciones a nuestro usuario.
+
+Existen tres tipos de permiso para las notificaciones:
+
+• Estado por defecto: no sabemos si podemos enviar notificaciones o no, aquí es donde debemos preguntarle al usuario si quiere recibir las notificaciones.
+• Granted: el usuario ha concedido el permiso.
+• Denied: directamente no podemos enviar las notificaciones.
+
+Primero que nada, debemos preguntar si nuestro navegador puede mandar notificaciones. Para ello vamos a checar si hay un objeto Notification en window y un Service Worker en el navegador, esto es así debido a que en Android necesitamos un Service Worker para que las notificaciones funcionen. En iOS no hay soporte para notificaciones.
+
+Publicando la app
+Antes de publicar nuestro proyecto en Github no olvides escribir un buen Readme, asegúrate de incluir un link funcional de la aplicación. Para poner en producción nuestro proyecto usaremos now. Si quieres profundizar en now puedes checar el curso que tenemos en Platzi.
+
+Now nos permite llevar a producción hasta proyectos que incluyen Docker, también tenemos un curso muy bueno en Platzi.
+
+Felicitaciones, con esto has terminado el curso de PWA con React. Hay que tener en cuenta a fin de este curso es que todos nuestros usuarios están en mobile, por ello te recomiendo dos cursos más:
+
+• Curso de Diseño de Interfaces Móviles
+• Curso de Next.js
+
+No olvides de tomar el examen de este curso.

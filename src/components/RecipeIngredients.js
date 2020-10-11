@@ -4,7 +4,7 @@ export default class RecipeIngredients extends React.Component {
 
   render() {
     const { ingredients } = this.props
-    
+
     return <div className="ingredients">
       <h2>Ingredients</h2>
       <ul>

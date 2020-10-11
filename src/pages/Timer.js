@@ -8,23 +8,44 @@ export default class Timer extends React.Component {
   }
 
   start = async () => {
-    // TODO: Chequear permisos
+    if ( !('Notification' in window) || !('serviceWorker' in navigator)) {
+      return alert('Tu browser no soporta notificaciones')
+    }
+
+    if(Notification.permission === 'default') {
+      await Notification.requestPermission()
+    }
+
+    if(Notification.permission === 'blocked') {
+      return alert("Bloqueste las notificaciones :(")
+    }
+
+    if(Notification.permission !== 'granted') {
+      return
+    }
 
     var timer = this.state.timer
     this.setState({ timeLeft: timer })
 
     var countdownInterval = setInterval(() => {
       timer = timer - 1;
-      this.setState({ timeLeft: timer }) 
-      if( timer <= 0 ) { 
-        clearInterval(countdownInterval) 
+      this.setState({ timeLeft: timer })
+      if( timer <= 0 ) {
+        clearInterval(countdownInterval)
         this.showNotification()
       }
     }, 1000)
   }
 
   showNotification = async () => {
-    // TODO: Enviar Notificación
+    const registration = await navigator.serviceWorker.getRegistration()
+
+    if(!registration) return alert("No hay service worker")
+
+    registration.showNotification("Listo el timer!", {
+      body: "Ding ding ding",
+      img: "/icon.png"
+    })
   }
 
   handleChange = (e) => {
@@ -36,7 +57,7 @@ export default class Timer extends React.Component {
 
     return <div className="Timer">
       <div className="name">Timer</div>
-      { timeLeft === 0 ? 
+      { timeLeft === 0 ?
         <div className="center">
           <input type="number" min="0" max="999" step="1" value={timer} onChange={this.handleChange} />
           <button onClick={ this.start }>Start</button>
